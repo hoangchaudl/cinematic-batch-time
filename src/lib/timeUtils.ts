@@ -54,7 +54,7 @@ export function parseTimeString(timeStr: string): number {
 }
 
 /**
- * Parse a list of video entries from text
+ * Parse a list of video entries from text - improved for table/column data
  * Handles various formats and extracts episode names and durations
  */
 export function parseVideoList(text: string): Duration[] {
@@ -67,53 +67,75 @@ export function parseVideoList(text: string): Duration[] {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
-    // Try to extract episode name and duration from various formats
+    // Skip header lines or lines that don't contain duration info
+    if (trimmed.toLowerCase().includes('name') || 
+        trimmed.toLowerCase().includes('status') || 
+        trimmed.toLowerCase().includes('duration') ||
+        trimmed.toLowerCase().includes('header')) {
+      continue;
+    }
+
+    // For table data, look for time patterns (prioritize rightmost column)
+    const timePattern = /(\d{1,2}:\d{2}(?::\d{2})?)/g;
+    const timeMatches = Array.from(trimmed.matchAll(timePattern));
+    
     let episodeName = '';
     let timeStr = '';
-
-    // Format: "Episode 1 - 23:45" or "S01E01 - 42:12"
-    let match = trimmed.match(/^(.+?)\s*[-–—]\s*(.+)$/);
-    if (match) {
-      episodeName = match[1].trim();
-      timeStr = match[2].trim();
-    }
-
-    // Format: "Episode 1 (23:45)" or "S01E01 (42:12)"
-    if (!match) {
-      match = trimmed.match(/^(.+?)\s*\((.+?)\)$/);
+    
+    if (timeMatches.length > 0) {
+      // Use the last (rightmost) time match for duration
+      const lastTimeMatch = timeMatches[timeMatches.length - 1];
+      timeStr = lastTimeMatch[0];
+      
+      // Extract episode name from the beginning of the line
+      const beforeTime = trimmed.substring(0, lastTimeMatch.index);
+      
+      // Clean up episode name - take first part before too many separators
+      const nameParts = beforeTime.split(/[\t\s]{2,}|[|•]/);
+      episodeName = nameParts[0]?.trim() || `Entry ${durations.length + 1}`;
+      
+      // Remove common prefixes/suffixes from episode name
+      episodeName = episodeName.replace(/^(ep|episode|item)\s*/i, '').trim();
+    } else {
+      // Fallback to original parsing logic for other formats
+      let match = trimmed.match(/^(.+?)\s*[-–—]\s*(.+)$/);
       if (match) {
         episodeName = match[1].trim();
         timeStr = match[2].trim();
       }
-    }
 
-    // Format: "Episode 1: 23:45" or "S01E01: 42:12"
-    if (!match) {
-      match = trimmed.match(/^(.+?):\s*(.+)$/);
-      if (match) {
-        episodeName = match[1].trim();
-        timeStr = match[2].trim();
+      if (!match) {
+        match = trimmed.match(/^(.+?)\s*\((.+?)\)$/);
+        if (match) {
+          episodeName = match[1].trim();
+          timeStr = match[2].trim();
+        }
       }
-    }
 
-    // Format: "Episode 1 23:45" (space separated)
-    if (!match) {
-      match = trimmed.match(/^(.+?)\s+(\d+[:\dhms\s]+.*)$/);
-      if (match) {
-        episodeName = match[1].trim();
-        timeStr = match[2].trim();
+      if (!match) {
+        match = trimmed.match(/^(.+?):\s*(.+)$/);
+        if (match) {
+          episodeName = match[1].trim();
+          timeStr = match[2].trim();
+        }
       }
-    }
 
-    // If we couldn't parse the format, try to extract any time pattern
-    if (!match) {
-      const timePattern = /(\d+(?::\d+){1,2}|\d+\s*(?:h|hr|hrs|hour|hours)\s*\d*\s*(?:m|min|mins|minute|minutes)?|\d+\s*(?:m|min|mins|minute|minutes))/i;
-      const timeMatch = trimmed.match(timePattern);
-      if (timeMatch) {
-        timeStr = timeMatch[0];
-        episodeName = trimmed.replace(timeMatch[0], '').trim();
-        // Clean up episode name
-        episodeName = episodeName.replace(/^[-–—:()[\]]+|[-–—:()[\]]+$/g, '').trim();
+      if (!match) {
+        match = trimmed.match(/^(.+?)\s+(\d+[:\dhms\s]+.*)$/);
+        if (match) {
+          episodeName = match[1].trim();
+          timeStr = match[2].trim();
+        }
+      }
+
+      if (!match) {
+        const timePatternFallback = /(\d+(?::\d+){1,2}|\d+\s*(?:h|hr|hrs|hour|hours)\s*\d*\s*(?:m|min|mins|minute|minutes)?|\d+\s*(?:m|min|mins|minute|minutes))/i;
+        const timeMatch = trimmed.match(timePatternFallback);
+        if (timeMatch) {
+          timeStr = timeMatch[0];
+          episodeName = trimmed.replace(timeMatch[0], '').trim();
+          episodeName = episodeName.replace(/^[-–—:()[\]]+|[-–—:()[\]]+$/g, '').trim();
+        }
       }
     }
 
@@ -133,26 +155,30 @@ export function parseVideoList(text: string): Duration[] {
 }
 
 /**
- * Format total minutes into a readable time string
+ * Format total minutes into a readable time string (minutes and seconds only)
  */
 export function formatTotalTime(totalMinutes: number): string {
-  if (totalMinutes < 60) {
-    return `${Math.round(totalMinutes)}M`;
-  }
+  const totalSeconds = Math.round(totalMinutes * 60);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  
+  return `${minutes}M ${seconds}S`;
+}
 
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = Math.round(totalMinutes % 60);
+/**
+ * Calculate time difference between two time inputs
+ */
+export function calculateTimeDifference(time1: string, time2: string): number {
+  const minutes1 = parseTimeString(time1);
+  const minutes2 = parseTimeString(time2);
+  return Math.abs(minutes2 - minutes1);
+}
 
-  if (hours < 24) {
-    return minutes > 0 ? `${hours}H ${minutes}M` : `${hours}H`;
-  }
-
-  const days = Math.floor(hours / 24);
-  const remainingHours = hours % 24;
-
-  let result = `${days}D`;
-  if (remainingHours > 0) result += ` ${remainingHours}H`;
-  if (minutes > 0) result += ` ${minutes}M`;
-
-  return result;
+/**
+ * Add two time inputs together
+ */
+export function addTimes(time1: string, time2: string): number {
+  const minutes1 = parseTimeString(time1);
+  const minutes2 = parseTimeString(time2);
+  return minutes1 + minutes2;
 }

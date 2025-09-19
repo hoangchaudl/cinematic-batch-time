@@ -1,7 +1,7 @@
-import { BatchWatchCalculator } from '@/components/BatchWatchCalculator';
+import { MathProducerCalculator } from "@/components/MathProducerCalculator";
 
 const Index = () => {
-  return <BatchWatchCalculator />;
+  return <MathProducerCalculator />;
 };
 
 export default Index;

@@ -4,6 +4,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { parseTimeString } from '@/lib/timeUtils';
 import { Hash, Play } from 'lucide-react';
+import { TimeInput } from './TimeInput';
 
 interface Duration {
   episode: string;
@@ -79,12 +80,12 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
             placeholder="e.g., 21-40"
             value={rangeInput}
             onChange={(e) => setRangeInput(e.target.value)}
-            className="h-12 bg-transparent border-0 border-b-2 border-cinema-border focus:border-cinema-accent rounded-none font-body text-lg text-cinema-text placeholder-cinema-text-muted transition-colors duration-300 focus-visible:ring-0 focus-visible:outline-none"
+            className="h-12 bg-white/5 border-white/20 backdrop-blur-glass text-cinema-text placeholder:text-cinema-text-muted focus:border-cinema-accent focus:ring-cinema-accent/30 transition-colors duration-300"
           />
           <Button
             onClick={handleGenerateFields}
             disabled={!rangeInput.match(/^\d+-\d+$/)}
-            className="w-full h-12 bg-cinema-accent hover:bg-cinema-accent/90 text-cinema-bg font-heading font-bold uppercase tracking-wide transition-all duration-300 hover:scale-[1.02] hover:shadow-glow-accent disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+            className="w-full h-12 bg-cinema-accent hover:bg-cinema-accent/90 text-cinema-bg font-heading font-bold uppercase tracking-wide transition-all duration-300 hover:scale-[1.02] hover:shadow-glow-accent disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <Play className="w-5 h-5 mr-2" />
             Generate Fields
@@ -95,7 +96,7 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
       {/* Episode Fields */}
       {showFields && (
         <div className="space-y-6 animate-fade-in-stagger">
-          <div className="border-t border-cinema-border pt-8">
+          <div className="border-t border-white/10 pt-8">
             <h4 className="font-heading font-bold text-xl text-cinema-text uppercase tracking-wider text-center mb-8">
               Episode Durations
             </h4>
@@ -104,22 +105,20 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
               {episodeFields.map((field, index) => (
                 <div 
                   key={index} 
-                  className="space-y-2"
+                  className="space-y-3"
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <Label 
                     htmlFor={`episode-${index}`}
-                    className="font-heading font-medium text-sm text-cinema-text uppercase tracking-wide"
+                    className="font-heading font-medium text-sm text-cinema-accent uppercase tracking-wide"
                   >
                     {field.episode}
                   </Label>
-                  <Input
-                    id={`episode-${index}`}
-                    type="text"
-                    placeholder="23:45 or 23m 45s"
+                  <TimeInput
                     value={field.duration}
-                    onChange={(e) => handleFieldChange(index, e.target.value)}
-                    className="h-10 bg-transparent border-0 border-b border-cinema-border focus:border-cinema-accent rounded-none font-body text-cinema-text placeholder-cinema-text-muted transition-colors duration-300 focus-visible:ring-0 focus-visible:outline-none"
+                    onChange={(duration) => handleFieldChange(index, duration)}
+                    placeholder="0:00"
+                    className="w-full"
                   />
                 </div>
               ))}
@@ -129,7 +128,7 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
               <Button
                 onClick={handleCalculate}
                 disabled={!episodeFields.some(field => field.duration.trim())}
-                className="h-12 px-8 bg-cinema-accent hover:bg-cinema-accent/90 text-cinema-bg font-heading font-bold uppercase tracking-wide transition-all duration-300 hover:scale-[1.02] hover:shadow-glow-accent disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 disabled:hover:shadow-none"
+                className="h-12 px-8 bg-cinema-accent hover:bg-cinema-accent/90 text-cinema-bg font-heading font-bold uppercase tracking-wide transition-all duration-300 hover:scale-[1.02] hover:shadow-glow-accent disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Calculate Total Time
               </Button>

@@ -105,7 +105,7 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
         className={`relative border-2 border-dashed rounded-lg p-8 transition-all duration-300 cursor-pointer ${
           dragActive
             ? 'border-cinema-accent bg-cinema-accent/5 shadow-glow-accent'
-            : 'border-cinema-border hover:border-cinema-accent/50'
+            : 'border-white/20 hover:border-cinema-accent/50'
         }`}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -166,7 +166,7 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
       {/* Extracted Text Display */}
       {extractedText && (
         <div className="space-y-4 animate-fade-in">
-          <div className="bg-cinema-card border border-cinema-border rounded-sm p-6">
+          <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6">
             <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide mb-4">
               Extracted Text
             </h4>
@@ -187,7 +187,7 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
       )}
 
       {/* Tips */}
-      <div className="bg-cinema-card/50 border border-cinema-border rounded-sm p-6 space-y-4">
+      <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6 space-y-4">
         <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide">
           OCR Tips
         </h4>

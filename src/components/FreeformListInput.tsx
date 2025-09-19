@@ -50,7 +50,7 @@ Episode 5 (1h 2m)`;
           placeholder={exampleText}
           value={textInput}
           onChange={(e) => setTextInput(e.target.value)}
-          className="min-h-64 bg-transparent border border-cinema-border focus:border-cinema-accent rounded-sm font-body text-cinema-text placeholder-cinema-text-muted resize-none transition-colors duration-300 focus-visible:ring-0 focus-visible:outline-none"
+          className="min-h-64 bg-white/5 border-white/20 backdrop-blur-glass text-cinema-text placeholder:text-cinema-text-muted resize-none transition-colors duration-300 focus:border-cinema-accent focus:ring-cinema-accent/30"
           rows={12}
         />
 
@@ -67,7 +67,7 @@ Episode 5 (1h 2m)`;
       </div>
 
       {/* Example Format Guide */}
-      <div className="bg-cinema-card/50 border border-cinema-border rounded-sm p-6 space-y-4">
+      <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6 space-y-4">
         <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide">
           Supported Formats
         </h4>

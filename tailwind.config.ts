@@ -14,8 +14,8 @@ export default {
     },
     extend: {
       fontFamily: {
-        'heading': 'var(--font-heading)',
-        'body': 'var(--font-body)',
+        'heading': ['Sofia Sans Semi Condensed', 'system-ui', 'sans-serif'],
+        'body': ['Sofia Sans Semi Condensed', 'system-ui', 'sans-serif'],
       },
       colors: {
         border: "hsl(var(--border))",
@@ -68,6 +68,9 @@ export default {
       boxShadow: {
         'glow-accent': 'var(--glow-accent)',
         'glow-accent-strong': 'var(--glow-accent-strong)',
+      },
+      backdropBlur: {
+        glass: '16px',
       },
       transitionTimingFunction: {
         'cinematic': 'var(--ease-cinematic)',
