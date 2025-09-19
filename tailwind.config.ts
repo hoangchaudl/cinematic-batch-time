@@ -56,7 +56,7 @@ export default {
         cinema: {
           bg: "hsl(var(--cinema-bg))",
           card: "hsl(var(--cinema-card))",
-          text: "hsl(var(--cinema-text))",
+          text: "#fff",
           'text-muted': "hsl(var(--cinema-text-muted))",
           accent: "hsl(var(--cinema-accent))",
           border: "hsl(var(--cinema-border))",
