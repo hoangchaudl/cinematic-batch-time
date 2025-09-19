@@ -1,3 +1,40 @@
+/**
+ * Preprocess OCR text to improve episode/duration extraction
+ * - Merges lines split by OCR
+ * - Removes extra spaces and non-printable characters
+ * - Ensures each episode is on one line
+ */
+export function preprocessOcrText(text: string): string {
+  if (!text || typeof text !== 'string') return '';
+  // Remove non-printable characters
+  let cleaned = text.replace(/[^\x20-\x7E\n]/g, '');
+  // Replace multiple spaces/tabs with a single space
+  cleaned = cleaned.replace(/[ \t]{2,}/g, ' ');
+  // Merge lines that are split in the middle of an episode row (e.g., if a line ends with a comma or is very short)
+  cleaned = cleaned.replace(/\n(?=\S{0,5}\s)/g, ' ');
+  // Remove extra blank lines
+  cleaned = cleaned.replace(/\n{2,}/g, '\n');
+  // Trim each line
+  cleaned = cleaned.split('\n').map(l => l.trim()).filter(Boolean).join('\n');
+  return cleaned;
+}
+/**
+ * Format total minutes into a readable time string and decimal minutes
+ * Returns: 'X min Y sec (Z.Z min)'
+ */
+export function formatTotalTimeWithDecimal(totalMinutes: number): string {
+  const totalSeconds = Math.floor(totalMinutes * 60);
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  const decimalMinutes = (totalSeconds / 60).toFixed(2);
+  if (seconds === 0) {
+    return `${minutes} min (${decimalMinutes} min)`;
+  }
+  if (minutes === 0) {
+    return `${seconds} sec (${decimalMinutes} min)`;
+  }
+  return `${minutes} min ${seconds} sec (${decimalMinutes} min)`;
+}
 interface Duration {
   episode: string;
   minutes: number;
@@ -21,7 +58,7 @@ export function parseTimeString(timeStr: string): number {
     const seconds = timeMatch[3] ? parseInt(timeMatch[3]) : parseInt(timeMatch[2]);
     
     totalMinutes = hours * 60 + minutes + (seconds / 60);
-    return Math.round(totalMinutes);
+    return totalMinutes;
   }
 
   // Handle hour patterns (1h, 2hr, 3 hours, etc.)
@@ -50,7 +87,7 @@ export function parseTimeString(timeStr: string): number {
     }
   }
 
-  return Math.round(totalMinutes);
+  return totalMinutes;
 }
 
 /**
@@ -158,12 +195,18 @@ export function parseVideoList(text: string): Duration[] {
  * Format total minutes into a readable time string (minutes and seconds only)
  */
 export function formatTotalTime(totalMinutes: number): string {
-  const totalSeconds = Math.round(totalMinutes * 60);
-  const minutes = Math.floor(totalSeconds / 60);
-  const seconds = totalSeconds % 60;
-  
-  return `${minutes}M ${seconds}S`;
+  return `${totalMinutes.toFixed(2)} minutes`;
 }
+
+/**
+ * Format total minutes into a readable time string (X minutes and Y seconds)
+ */
+export function formatToMinutesAndSeconds(totalMinutes: number): string {
+  const finalMinutes = Math.floor(totalMinutes);
+  const finalSeconds = Math.round((totalMinutes - finalMinutes) * 60);
+  return `${finalMinutes} minutes and ${finalSeconds} seconds`;
+}
+
 
 /**
  * Calculate time difference between two time inputs
