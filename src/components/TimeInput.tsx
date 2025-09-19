@@ -6,13 +6,15 @@ interface TimeInputProps {
   onChange: (value: string) => void;
   placeholder?: string;
   className?: string;
+  onEnter?: () => void;
 }
 
 export const TimeInput: React.FC<TimeInputProps> = ({ 
   value, 
   onChange, 
   placeholder = "0", 
-  className = "" 
+  className = "", 
+  onEnter 
 }) => {
   const [minutes, setMinutes] = useState(value.split(':')[0] || '');
   const [seconds, setSeconds] = useState(value.split(':')[1] || '');
@@ -44,6 +46,9 @@ export const TimeInput: React.FC<TimeInputProps> = ({
       e.preventDefault();
       secondsRef.current?.focus();
     }
+    if (e.key === 'Enter' && onEnter) {
+      onEnter();
+    }
   };
 
   const handleSecondsKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
@@ -51,11 +56,14 @@ export const TimeInput: React.FC<TimeInputProps> = ({
       e.preventDefault();
       minutesRef.current?.focus();
     }
+    if (e.key === 'Enter' && onEnter) {
+      onEnter();
+    }
   };
 
   return (
-    <div className={`flex items-center space-x-2 ${className}`}>
-      <div className="relative">
+  <div className={`flex items-center space-x-4 ${className}`}>
+  <div className="relative flex items-center">
         <Input
           ref={minutesRef}
           type="text"
@@ -66,10 +74,10 @@ export const TimeInput: React.FC<TimeInputProps> = ({
           className="w-16 text-center bg-white/5 border-white/20 backdrop-blur-glass text-cinema-text placeholder:text-cinema-text-muted focus:border-cinema-accent focus:ring-cinema-accent/30"
           maxLength={3}
         />
-        <span className="absolute -right-3 top-1/2 transform -translate-y-1/2 text-cinema-text-muted text-sm">M</span>
+        <span className="ml-3 text-cinema-text-muted text-sm">M</span>
       </div>
       
-      <div className="relative">
+  <div className="relative flex items-center">
         <Input
           ref={secondsRef}
           type="text"
@@ -80,7 +88,7 @@ export const TimeInput: React.FC<TimeInputProps> = ({
           className="w-16 text-center bg-white/5 border-white/20 backdrop-blur-glass text-cinema-text placeholder:text-cinema-text-muted focus:border-cinema-accent focus:ring-cinema-accent/30"
           maxLength={2}
         />
-        <span className="absolute -right-3 top-1/2 transform -translate-y-1/2 text-cinema-text-muted text-sm">S</span>
+        <span className="ml-3 text-cinema-text-muted text-sm">S</span>
       </div>
     </div>
   );
