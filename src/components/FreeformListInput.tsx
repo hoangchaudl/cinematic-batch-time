@@ -52,6 +52,12 @@ Episode 5 (1h 2m)`;
           onChange={(e) => setTextInput(e.target.value)}
           className="min-h-64 bg-white/5 border-white/20 backdrop-blur-glass text-cinema-text placeholder:text-cinema-text-muted resize-none transition-colors duration-300 focus:border-cinema-accent focus:ring-cinema-accent/30"
           rows={12}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (textInput.trim()) handleCalculate();
+            }
+          }}
         />
 
         <div className="text-center">
