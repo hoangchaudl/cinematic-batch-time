@@ -2,41 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
+/* Cinematic Design System - Story.co inspired dark theme
 All colors MUST be HSL.
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Cinematic Dark Theme */
+    --background: 220 13% 7%;
+    --foreground: 0 0% 96%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card: 220 13% 9%;
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover: 220 13% 9%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Electric Blue Accent */
+    --primary: 195 100% 55%;
+    --primary-foreground: 220 13% 7%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    --secondary: 220 13% 15%;
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    --muted: 220 13% 12%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --accent: 195 100% 55%;
+    --accent-foreground: 220 13% 7%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 96%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --border: 220 13% 20%;
+    --input: 220 13% 20%;
+    --ring: 195 100% 55%;
 
-    --radius: 0.5rem;
+    --radius: 0.25rem;
+    
+    /* Custom Cinematic Tokens */
+    --cinema-bg: 220 13% 7%;
+    --cinema-card: 220 13% 9%;
+    --cinema-text: 0 0% 96%;
+    --cinema-text-muted: 0 0% 65%;
+    --cinema-accent: 195 100% 55%;
+    --cinema-accent-glow: 195 100% 55%;
+    --cinema-border: 220 13% 20%;
+    
+    /* Gradients & Effects */
+    --gradient-accent: linear-gradient(135deg, hsl(195 100% 55%), hsl(210 100% 65%));
+    --glow-accent: 0 0 20px hsl(195 100% 55% / 0.3);
+    --glow-accent-strong: 0 0 30px hsl(195 100% 55% / 0.5);
+    
+    /* Typography Scale */
+    --font-heading: 'Inter', system-ui, sans-serif;
+    --font-body: 'Inter', system-ui, sans-serif;
+    
+    /* Animation Curves */
+    --ease-cinematic: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --sidebar-background: 0 0% 98%;
 
@@ -100,6 +124,32 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-cinema-bg text-cinema-text font-body antialiased;
+  }
+  
+  html {
+    @apply bg-cinema-bg;
+  }
+  
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-cinema-card;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-cinema-border rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-cinema-accent/50;
+  }
+  
+  /* Selection styles */
+  ::selection {
+    @apply bg-cinema-accent/30 text-cinema-text;
   }
 }
