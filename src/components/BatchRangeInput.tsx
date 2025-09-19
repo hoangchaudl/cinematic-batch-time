@@ -81,6 +81,12 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
             value={rangeInput}
             onChange={(e) => setRangeInput(e.target.value)}
             className="h-12 bg-white/5 border-white/20 backdrop-blur-glass text-cinema-text placeholder:text-cinema-text-muted focus:border-cinema-accent focus:ring-cinema-accent/30 transition-colors duration-300"
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' && rangeInput.match(/^\d+-\d+$/)) {
+                e.preventDefault();
+                handleGenerateFields();
+              }
+            }}
           />
           <Button
             onClick={handleGenerateFields}
@@ -119,6 +125,7 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
                     onChange={(duration) => handleFieldChange(index, duration)}
                     placeholder="0:00"
                     className="w-full"
+                    onEnter={handleCalculate}
                   />
                 </div>
               ))}
