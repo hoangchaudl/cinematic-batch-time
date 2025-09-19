@@ -170,7 +170,15 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
             <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide mb-4">
               Extracted Text
             </h4>
-            <pre className="whitespace-pre-wrap font-body text-sm text-cinema-text-muted max-h-48 overflow-y-auto">
+            <pre
+              className="whitespace-pre-wrap font-body text-sm text-cinema-text-muted max-h-48 overflow-y-auto"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleRecalculate();
+                }
+              }}
+            >
               {extractedText}
             </pre>
           </div>
