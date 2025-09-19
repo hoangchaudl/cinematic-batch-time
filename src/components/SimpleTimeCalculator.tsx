@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { TimeInput } from './TimeInput';
-import { calculateTimeDifference, addTimes, formatTotalTime } from '@/lib/timeUtils';
+import { calculateTimeDifference, addTimes, formatTotalTime, formatTotalTimeWithDecimal } from '@/lib/timeUtils';
 import { Calculator, Plus, Minus } from 'lucide-react';
 
 export const SimpleTimeCalculator: React.FC = () => {
@@ -29,6 +29,13 @@ export const SimpleTimeCalculator: React.FC = () => {
     setResult(null);
   };
 
+  // Handle Enter key to calculate
+  const handleTimeInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && time1 && time2) {
+      handleAdd();
+    }
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="text-center space-y-4">
@@ -52,6 +59,7 @@ export const SimpleTimeCalculator: React.FC = () => {
                 value={time1}
                 onChange={setTime1}
                 placeholder="Enter time"
+                onEnter={handleAdd}
               />
             </div>
             
@@ -63,6 +71,7 @@ export const SimpleTimeCalculator: React.FC = () => {
                 value={time2}
                 onChange={setTime2}
                 placeholder="Enter time"
+                onEnter={handleAdd}
               />
             </div>
           </div>
@@ -102,7 +111,7 @@ export const SimpleTimeCalculator: React.FC = () => {
                   {result.operation} Result
                 </p>
                 <p className="font-heading font-black text-4xl text-cinema-text tracking-wide">
-                  {formatTotalTime(result.value)}
+                  {formatTotalTimeWithDecimal(result.value)}
                 </p>
               </div>
             </div>
