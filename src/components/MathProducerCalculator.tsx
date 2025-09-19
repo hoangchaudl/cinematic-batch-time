@@ -5,7 +5,7 @@ import { BatchRangeInput } from './BatchRangeInput';
 import { FreeformListInput } from './FreeformListInput';
 import { ScreenshotInput } from './ScreenshotInput';
 import { SimpleTimeCalculator } from './SimpleTimeCalculator';
-import { parseTimeString, formatTotalTime } from '@/lib/timeUtils';
+import { parseTimeString, formatTotalTime, formatTotalTimeWithDecimal } from '@/lib/timeUtils';
 import { Calculator, Hash, FileText, Camera, Clock } from 'lucide-react';
 
 interface Duration {
@@ -34,12 +34,12 @@ export const MathProducerCalculator = () => {
         <div className="text-center mb-16 animate-fade-in">
           <div className="flex items-center justify-center mb-6">
             <Calculator className="w-12 h-12 text-cinema-accent mr-4" />
-            <h1 className="font-heading font-black text-5xl md:text-6xl text-cinema-text tracking-wider uppercase">
-              A+ in Math Producer
+            <h1 className="font-heading font-black text-4xl md:text-5xl text-cinema-text tracking-wider uppercase">
+              Get An A+ in Your Weekly Report
             </h1>
           </div>
           <p className="font-heading font-medium text-xl text-cinema-text-muted tracking-wide uppercase">
-            Calculate Total Watch Time & More
+            Calculate Total Episode Time & More
           </p>
         </div>
 
@@ -52,7 +52,7 @@ export const MathProducerCalculator = () => {
               <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
                 <div className="flex items-center">
                   <Hash className="w-5 h-5 mr-3" />
-                  Batch Range Input
+                  Batch Episode Input
                 </div>
               </AccordionTrigger>
               <AccordionContent className="p-8 md:p-12">
@@ -60,7 +60,8 @@ export const MathProducerCalculator = () => {
               </AccordionContent>
             </AccordionItem>
 
-            {/* Freeform List Input */}
+            {/* Freeform List Input and Screenshot OCR temporarily hidden */}
+            {/*
             <AccordionItem value="freeform" className="border-b border-white/10">
               <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
                 <div className="flex items-center">
@@ -73,7 +74,6 @@ export const MathProducerCalculator = () => {
               </AccordionContent>
             </AccordionItem>
 
-            {/* Screenshot Input */}
             <AccordionItem value="screenshot" className="border-b border-white/10">
               <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
                 <div className="flex items-center">
@@ -85,6 +85,7 @@ export const MathProducerCalculator = () => {
                 <ScreenshotInput onDurationsUpdate={handleDurationsUpdate} />
               </AccordionContent>
             </AccordionItem>
+            */}
 
             {/* Simple Time Calculator */}
             <AccordionItem value="calculator" className="border-b-0">
@@ -110,7 +111,7 @@ export const MathProducerCalculator = () => {
                     {totalStats.totalEpisodes} Episode{totalStats.totalEpisodes !== 1 ? 's' : ''}
                   </p>
                   <p className="font-heading font-black text-5xl md:text-6xl text-cinema-text tracking-wide">
-                    {formatTotalTime(totalStats.totalMinutes)}
+                    {formatTotalTimeWithDecimal(totalStats.totalMinutes)}
                   </p>
                 </div>
                 
@@ -134,8 +135,8 @@ export const MathProducerCalculator = () => {
 
         {/* Footer */}
         <div className="text-center mt-12 opacity-50">
-          <p className="font-body text-sm text-cinema-text-muted uppercase tracking-wider">
-            Powered by OCR • Built for Math Producers
+          <p className="font-body text-sm text-cinema-text uppercase tracking-wider">
+            Powered by Paparoti • Built for StoryCo Producers
           </p>
         </div>
       </div>
