@@ -23,7 +23,7 @@ export function preprocessOcrText(text: string): string {
  * Returns: 'X min Y sec (Z.Z min)'
  */
 export function formatTotalTimeWithDecimal(totalMinutes: number): string {
-  const totalSeconds = Math.floor(totalMinutes * 60);
+  const totalSeconds = Math.round(totalMinutes * 60);
   const minutes = Math.floor(totalSeconds / 60);
   const seconds = totalSeconds % 60;
   const decimalMinutes = (totalSeconds / 60).toFixed(2);
@@ -54,9 +54,8 @@ export function parseTimeString(timeStr: string): number {
   if (timeMatch) {
     const hours = timeMatch[3] ? parseInt(timeMatch[1]) : 0;
     const minutes = timeMatch[3] ? parseInt(timeMatch[2]) : parseInt(timeMatch[1]);
-    let seconds = timeMatch[3] ? parseInt(timeMatch[3]) : parseInt(timeMatch[2]);
+    const seconds = timeMatch[3] ? parseInt(timeMatch[3]) : parseInt(timeMatch[2]);
     // Always round seconds to nearest integer before converting to minutes
-    seconds = Math.round(seconds);
     totalMinutes = hours * 60 + minutes + (seconds / 60);
     return totalMinutes;
   }
