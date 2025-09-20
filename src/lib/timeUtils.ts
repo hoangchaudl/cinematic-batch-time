@@ -46,7 +46,6 @@ interface Duration {
  */
 export function parseTimeString(timeStr: string): number {
   if (!timeStr || typeof timeStr !== 'string') return 0;
-  
   const str = timeStr.trim().toLowerCase();
   let totalMinutes = 0;
 
@@ -55,8 +54,9 @@ export function parseTimeString(timeStr: string): number {
   if (timeMatch) {
     const hours = timeMatch[3] ? parseInt(timeMatch[1]) : 0;
     const minutes = timeMatch[3] ? parseInt(timeMatch[2]) : parseInt(timeMatch[1]);
-    const seconds = timeMatch[3] ? parseInt(timeMatch[3]) : parseInt(timeMatch[2]);
-    
+    let seconds = timeMatch[3] ? parseInt(timeMatch[3]) : parseInt(timeMatch[2]);
+    // Always round seconds to nearest integer before converting to minutes
+    seconds = Math.round(seconds);
     totalMinutes = hours * 60 + minutes + (seconds / 60);
     return totalMinutes;
   }
