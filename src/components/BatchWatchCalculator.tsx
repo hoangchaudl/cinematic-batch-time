@@ -66,7 +66,7 @@ export const BatchWatchCalculator = () => {
                 className="flex-1 h-16 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted data-[state=active]:text-cinema-accent data-[state=active]:bg-transparent data-[state=active]:shadow-none relative data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-cinema-accent transition-all duration-300"
               >
                 <Camera className="w-5 h-5 mr-3" />
-                Screenshot
+                Screenshot Uploading
               </TabsTrigger>
             </TabsList>
 
