@@ -61,19 +61,6 @@ export const MathProducerCalculator = () => {
             </AccordionItem>
 
             {/* Freeform List Input and Screenshot OCR temporarily hidden */}
-            {/*
-            <AccordionItem value="freeform" className="border-b border-white/10">
-              <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
-                <div className="flex items-center">
-                  <FileText className="w-5 h-5 mr-3" />
-                  Freeform List Input
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="p-8 md:p-12">
-                <FreeformListInput onDurationsUpdate={handleDurationsUpdate} />
-              </AccordionContent>
-            </AccordionItem>
-
             <AccordionItem value="screenshot" className="border-b border-white/10">
               <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
                 <div className="flex items-center">
@@ -85,7 +72,6 @@ export const MathProducerCalculator = () => {
                 <ScreenshotInput onDurationsUpdate={handleDurationsUpdate} />
               </AccordionContent>
             </AccordionItem>
-            */}
 
             {/* Simple Time Calculator */}
             <AccordionItem value="calculator" className="border-b-0">
