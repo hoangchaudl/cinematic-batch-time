@@ -38,7 +38,7 @@ export const BatchWatchCalculator = () => {
             </h1>
           </div>
           <p className="font-heading font-medium text-xl text-cinema-text-muted tracking-wide uppercase">
-            Calculate Total Watch Time
+            Calculate Total Episode Time
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export const BatchWatchCalculator = () => {
         {/* Footer */}
         <div className="text-center mt-12 opacity-50">
           <p className="font-body text-sm text-cinema-text-muted uppercase tracking-wider">
-            Powered by OCR • Built for Binge Watchers
+            Powered by Paparoti • Built for Producers & Audio Engineers
           </p>
         </div>
       </div>
