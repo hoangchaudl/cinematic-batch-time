@@ -65,7 +65,7 @@ export const MathProducerCalculator = () => {
               <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
                 <div className="flex items-center">
                   <Camera className="w-5 h-5 mr-3" />
-                  Screenshot OCR
+                  Screenshot Uploading
                 </div>
               </AccordionTrigger>
               <AccordionContent className="p-8 md:p-12">
@@ -122,7 +122,7 @@ export const MathProducerCalculator = () => {
         {/* Footer */}
         <div className="text-center mt-12 opacity-50">
           <p className="font-body text-sm text-cinema-text uppercase tracking-wider">
-            Powered by Paparoti • Built for StoryCo Producers
+            Powered by Paparoti • Built for Producers & Audio Engineers
           </p>
         </div>
       </div>
