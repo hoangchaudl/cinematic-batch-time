@@ -135,6 +135,39 @@ export const MathProducerCalculator = () => {
 
             <div className="p-8 md:p-12">
               <TabsContent value="screenshot" className="mt-0 focus-visible:outline-none">
+                <div className="mb-8">
+                  <div className="font-heading font-semibold text-base text-cinema-text-muted mb-2">How to Export from Frame.io for Best Results</div>
+                  <div className="text-cinema-text-muted text-sm mb-4">Set up your Frame.io export so the table matches this format for best screenshot OCR results:</div>
+                  <div className="overflow-x-auto mb-4">
+                    <table className="w-full text-left text-sm font-body text-cinema-text-muted border-collapse bg-cinema-bg border border-white/10 rounded">
+                      <thead>
+                        <tr className="bg-white/5">
+                          <th className="px-3 py-2 font-heading font-bold">Name</th>
+                          <th className="px-3 py-2 font-heading font-bold">Date Uploaded</th>
+                          <th className="px-3 py-2 font-heading font-bold">Duration</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td className="px-3 py-2">Episode 1</td>
+                          <td className="px-3 py-2">2025-09-21</td>
+                          <td className="px-3 py-2">2:05</td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2">Episode 2</td>
+                          <td className="px-3 py-2">2025-09-21</td>
+                          <td className="px-3 py-2">3:43</td>
+                        </tr>
+                        <tr>
+                          <td className="px-3 py-2">Episode 3</td>
+                          <td className="px-3 py-2">2025-09-21</td>
+                          <td className="px-3 py-2">4:26</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div className="text-cinema-text-muted text-xs">Make sure the columns are clearly labeled and the duration is in <b>minutes:seconds</b> format for best results.</div>
+                </div>
                 <ScreenshotInput onDurationsUpdate={handleDurationsUpdate} />
               </TabsContent>
               <TabsContent value="range" className="mt-0 focus-visible:outline-none">
