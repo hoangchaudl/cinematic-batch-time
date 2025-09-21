@@ -112,40 +112,101 @@ export function parseVideoList(text: string): Duration[] {
       continue;
     }
 
-    // For table data, look for time patterns (prioritize rightmost column)
-    const timePattern = /(\d{1,2}:\d{2}(?::\d{2})?)/g;
-    const timeMatches = Array.from(trimmed.matchAll(timePattern));
+    // For table data, build a list of time pattern candidates (colon times, textual durations, etc.)
+    const timeCandidates: Array<{ value: string; index: number; priority: number }> = [];
+
+    const colonPattern = /(\d{1,2}:\d{2}(?::\d{2})?)(?!\s*[AaPp][Mm])/g;
+    for (const match of trimmed.matchAll(colonPattern)) {
+      if (typeof match.index === 'number') {
+        timeCandidates.push({ value: match[0], index: match.index, priority: 2 });
+      }
+    }
+
+    // Capture textual durations like "3m 19s", "1 hour 2 minutes", etc.
+    const unitPattern = /(\d+(?:\.\d+)?\s*(?:h|hr|hrs|hour|hours|m|min|mins|minute|minutes|s|sec|secs|second|seconds))/gi;
+    const unitMatches = Array.from(trimmed.matchAll(unitPattern));
+    for (let i = 0; i < unitMatches.length; i++) {
+      const match = unitMatches[i];
+      if (typeof match.index !== 'number') continue;
+      let combinedValue = match[0];
+      const startIndex = match.index;
+      let endIndex = startIndex + match[0].length;
+
+      while (i + 1 < unitMatches.length) {
+        const nextMatch = unitMatches[i + 1];
+        if (typeof nextMatch.index !== 'number') break;
+        const between = trimmed.slice(endIndex, nextMatch.index);
+        if (!/^[\s,/()*-–—]*(?:and\s+)?$/i.test(between)) break;
+        combinedValue += between + nextMatch[0];
+        endIndex = nextMatch.index + nextMatch[0].length;
+        i++;
+      }
+
+      timeCandidates.push({ value: combinedValue.trim(), index: startIndex, priority: 3 });
+    }
 
     let episodeName = '';
     let timeStr = '';
     let episodeNum = '';
+    let parsedMinutes = 0;
 
-    if (timeMatches.length > 0) {
-      // Use the last (rightmost) time match for duration
-      const lastTimeMatch = timeMatches[timeMatches.length - 1];
-      timeStr = lastTimeMatch[0];
+    if (timeCandidates.length > 0) {
+      const sortedCandidates = timeCandidates.sort((a, b) => {
+        if (b.priority !== a.priority) return b.priority - a.priority;
+        return b.index - a.index;
+      });
 
-      // Extract episode name from the beginning of the line
-      const beforeTime = trimmed.substring(0, lastTimeMatch.index);
-
-      // Try to extract episode number from various patterns
-      // Matches: Ep 12, Episode 12, E12, 12, etc.
-      const epNumMatch = beforeTime.match(/(?:ep(?:isode)?\.?\s*|e\s*)?(\d{1,4})/i);
-      episodeNum = epNumMatch ? epNumMatch[1] : '';
-
-      // If still not found, try to find a number at the start of the line
-      if (!episodeNum) {
-        const startNumMatch = beforeTime.match(/^(\d{1,4})/);
-        episodeNum = startNumMatch ? startNumMatch[1] : '';
+      let selectedCandidate: { value: string; index: number } | null = null;
+      for (const candidate of sortedCandidates) {
+        const candidateMinutes = parseTimeString(candidate.value);
+        if (candidateMinutes > 0) {
+          timeStr = candidate.value;
+          parsedMinutes = candidateMinutes;
+          selectedCandidate = { value: candidate.value, index: candidate.index };
+          break;
+        }
       }
 
-      // Clean up episode name - take first part before too many separators
-      const nameParts = beforeTime.split(/[\t\s]{2,}|[|•]/);
-      episodeName = nameParts[0]?.trim() || `Entry ${durations.length + 1}`;
+      if (selectedCandidate) {
+        // Extract episode name from the beginning of the line
+        const beforeTime = trimmed.substring(0, selectedCandidate.index);
 
-      // Remove common prefixes/suffixes from episode name
-      episodeName = episodeName.replace(/^(ep|episode|item)\s*/i, '').trim();
-    } else {
+        const normalizedBeforeTime = beforeTime.replace(/[_.-]+/g, ' ');
+
+        // Try to extract episode number from various patterns
+        // Matches: Ep 12, Episode 12, E12, 12, etc.
+        const epPrefixMatch = normalizedBeforeTime.match(/(?:^|\b)(?:ep(?:isode)?|e)\s*[#:-]*\s*(\d{1,4})\b/i);
+        episodeNum = epPrefixMatch ? epPrefixMatch[1] : '';
+
+        // If still not found, try to find a number at the start of the line
+        if (!episodeNum) {
+          const startNumMatch = normalizedBeforeTime.match(/^(\d{1,4})\b/);
+          episodeNum = startNumMatch ? startNumMatch[1] : '';
+        }
+
+        if (!episodeNum) {
+          const tokens = normalizedBeforeTime.split(/\s+/);
+          for (const token of tokens) {
+            if (!token) continue;
+            if (/[/:]/.test(token)) continue; // Skip dates or times
+            const digits = token.replace(/\D/g, '');
+            if (!digits) continue;
+            if (digits.length > 4) continue;
+            episodeNum = digits;
+            break;
+          }
+        }
+
+        // Clean up episode name - take first part before too many separators
+        const nameParts = beforeTime.split(/[\t\s]{2,}|[|•]/);
+        episodeName = nameParts[0]?.trim() || `Entry ${durations.length + 1}`;
+
+        // Remove common prefixes/suffixes from episode name
+        episodeName = episodeName.replace(/^(ep|episode|item)\s*/i, '').trim();
+      }
+    }
+
+    if (!timeStr) {
       // Fallback to original parsing logic for other formats
       let match = trimmed.match(/^(.+?)\s*[-–—]\s*(.+)$/);
       if (match) {
@@ -190,7 +251,7 @@ export function parseVideoList(text: string): Duration[] {
 
     // Parse the time and create duration entry
     if (episodeName && timeStr) {
-      const minutes = parseTimeString(timeStr);
+      const minutes = parsedMinutes || parseTimeString(timeStr);
       if (minutes > 0) {
         // Fallback: if episodeNum is still empty, use a sequential number
         const finalEpisodeNum = episodeNum || fallbackCounter.toString();
