@@ -99,6 +99,7 @@ export function parseVideoList(text: string): Duration[] {
   const lines = text.split('\n').filter(line => line.trim());
   const durations: Duration[] = [];
 
+  let fallbackCounter = 1;
   for (const line of lines) {
     const trimmed = line.trim();
     if (!trimmed) continue;
@@ -114,22 +115,34 @@ export function parseVideoList(text: string): Duration[] {
     // For table data, look for time patterns (prioritize rightmost column)
     const timePattern = /(\d{1,2}:\d{2}(?::\d{2})?)/g;
     const timeMatches = Array.from(trimmed.matchAll(timePattern));
-    
+
     let episodeName = '';
     let timeStr = '';
-    
+    let episodeNum = '';
+
     if (timeMatches.length > 0) {
       // Use the last (rightmost) time match for duration
       const lastTimeMatch = timeMatches[timeMatches.length - 1];
       timeStr = lastTimeMatch[0];
-      
+
       // Extract episode name from the beginning of the line
       const beforeTime = trimmed.substring(0, lastTimeMatch.index);
-      
+
+      // Try to extract episode number from various patterns
+      // Matches: Ep 12, Episode 12, E12, 12, etc.
+      const epNumMatch = beforeTime.match(/(?:ep(?:isode)?\.?\s*|e\s*)?(\d{1,4})/i);
+      episodeNum = epNumMatch ? epNumMatch[1] : '';
+
+      // If still not found, try to find a number at the start of the line
+      if (!episodeNum) {
+        const startNumMatch = beforeTime.match(/^(\d{1,4})/);
+        episodeNum = startNumMatch ? startNumMatch[1] : '';
+      }
+
       // Clean up episode name - take first part before too many separators
       const nameParts = beforeTime.split(/[\t\s]{2,}|[|•]/);
       episodeName = nameParts[0]?.trim() || `Entry ${durations.length + 1}`;
-      
+
       // Remove common prefixes/suffixes from episode name
       episodeName = episodeName.replace(/^(ep|episode|item)\s*/i, '').trim();
     } else {
@@ -179,10 +192,13 @@ export function parseVideoList(text: string): Duration[] {
     if (episodeName && timeStr) {
       const minutes = parseTimeString(timeStr);
       if (minutes > 0) {
+        // Fallback: if episodeNum is still empty, use a sequential number
+        const finalEpisodeNum = episodeNum || fallbackCounter.toString();
         durations.push({
-          episode: episodeName || `Entry ${durations.length + 1}`,
+          episode: finalEpisodeNum,
           minutes
         });
+        fallbackCounter++;
       }
     }
   }
