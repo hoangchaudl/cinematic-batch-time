@@ -93,10 +93,10 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
       <div className="text-center space-y-4">
         <Camera className="w-8 h-8 text-cinema-accent mx-auto" />
         <h3 className="font-heading font-bold text-2xl text-cinema-text uppercase tracking-wider">
-          Screenshot OCR
+          FrameIO Screenshot 
         </h3>
         <p className="font-body text-cinema-text-muted max-w-2xl mx-auto">
-          Upload a screenshot of your episode list and let OCR extract the text automatically.
+          Upload a screenshot of your episode list with list view in FrameIO and let the tool extract the text automatically.
         </p>
       </div>
 
@@ -200,9 +200,10 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
           OCR Tips
         </h4>
         <div className="space-y-2 text-sm font-body text-cinema-text-muted">
-          <div>• Use high-contrast, clear screenshots</div>
+          <div>• Capture screenshot of batch episodes in FrameIO using list view</div>
           <div>• Ensure episode names and durations are clearly visible</div>
           <div>• Crop to focus on the episode list area</div>
+          <div>• Use high-contrast, clear screenshots</div>
           <div>• PNG or JPEG formats work best</div>
         </div>
       </div>
