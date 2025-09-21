@@ -66,13 +66,13 @@ export const BatchRangeInput: React.FC<BatchRangeInputProps> = ({ onDurationsUpd
             Episode Range
           </h3>
           <p className="font-body text-cinema-text-muted">
-            Enter a range like "21-40" to generate individual episode fields
+            Enter a batch of episode like "21-40" to generate individual episode fields
           </p>
         </div>
 
         <div className="max-w-md mx-auto space-y-4">
           <Label htmlFor="range" className="font-heading font-semibold text-sm text-cinema-text uppercase tracking-wide">
-            Enter Range
+            Enter Batch
           </Label>
           <Input
             id="range"
