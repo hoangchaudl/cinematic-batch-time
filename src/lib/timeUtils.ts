@@ -113,7 +113,7 @@ export function parseVideoList(text: string): Duration[] {
     }
 
     // For table data, look for time patterns (prioritize rightmost column)
-    const timePattern = /(\d{1,2}:\d{2}(?::\d{2})?)/g;
+    const timePattern = /(\d{1,2}:\d{2}(?::\d{2})?)(?!\s*[AaPp][Mm])/g;
     const timeMatches = Array.from(trimmed.matchAll(timePattern));
 
     let episodeName = '';
@@ -128,15 +128,30 @@ export function parseVideoList(text: string): Duration[] {
       // Extract episode name from the beginning of the line
       const beforeTime = trimmed.substring(0, lastTimeMatch.index);
 
+      const normalizedBeforeTime = beforeTime.replace(/[_.-]+/g, ' ');
+
       // Try to extract episode number from various patterns
       // Matches: Ep 12, Episode 12, E12, 12, etc.
-      const epNumMatch = beforeTime.match(/(?:ep(?:isode)?\.?\s*|e\s*)?(\d{1,4})/i);
-      episodeNum = epNumMatch ? epNumMatch[1] : '';
+      const epPrefixMatch = normalizedBeforeTime.match(/(?:^|\b)(?:ep(?:isode)?|e)\s*[#:-]*\s*(\d{1,4})\b/i);
+      episodeNum = epPrefixMatch ? epPrefixMatch[1] : '';
 
       // If still not found, try to find a number at the start of the line
       if (!episodeNum) {
-        const startNumMatch = beforeTime.match(/^(\d{1,4})/);
+        const startNumMatch = normalizedBeforeTime.match(/^(\d{1,4})\b/);
         episodeNum = startNumMatch ? startNumMatch[1] : '';
+      }
+
+      if (!episodeNum) {
+        const tokens = normalizedBeforeTime.split(/\s+/);
+        for (const token of tokens) {
+          if (!token) continue;
+          if (/[/:]/.test(token)) continue; // Skip dates or times
+          const digits = token.replace(/\D/g, '');
+          if (!digits) continue;
+          if (digits.length > 4) continue;
+          episodeNum = digits;
+          break;
+        }
       }
 
       // Clean up episode name - take first part before too many separators
