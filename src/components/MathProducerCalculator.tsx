@@ -7,6 +7,7 @@ import { ScreenshotInput } from './ScreenshotInput';
 import { SimpleTimeCalculator } from './SimpleTimeCalculator';
 import { parseTimeString, formatTotalTime, formatTotalTimeWithDecimal } from '@/lib/timeUtils';
 import { Calculator, Hash, FileText, Camera, Clock } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 
 interface Duration {
   episode: string;
@@ -15,16 +16,34 @@ interface Duration {
 
 export const MathProducerCalculator = () => {
   const [durations, setDurations] = useState<Duration[]>([]);
-  const [activeSection, setActiveSection] = useState<string>('range');
+  const [activeTab, setActiveTab] = useState<string>('screenshot');
+  const [rangeDurations, setRangeDurations] = useState<Duration[]>([]);
+  const [screenshotDurations, setScreenshotDurations] = useState<Duration[]>([]);
+  const [calculatorDurations, setCalculatorDurations] = useState<Duration[]>([]);
 
   const totalStats = useMemo(() => {
-    const totalMinutes = durations.reduce((sum, d) => sum + d.minutes, 0);
-    const totalEpisodes = durations.length;
-    return { totalMinutes, totalEpisodes };
-  }, [durations]);
+    let list = [];
+    if (activeTab === 'range') list = rangeDurations;
+    else if (activeTab === 'screenshot') list = screenshotDurations;
+    else if (activeTab === 'calculator') list = calculatorDurations;
+    const totalMinutes = list.reduce((sum, d) => sum + d.minutes, 0);
+    const totalEpisodes = list.length;
+    return { totalMinutes, totalEpisodes, list };
+  }, [activeTab, rangeDurations, screenshotDurations, calculatorDurations]);
 
   const handleDurationsUpdate = (newDurations: Duration[]) => {
-    setDurations(newDurations);
+    if (activeTab === 'range') setRangeDurations(newDurations);
+    else if (activeTab === 'screenshot') setScreenshotDurations(newDurations);
+    else if (activeTab === 'calculator') setCalculatorDurations(newDurations);
+  };
+
+  const [copiedTotal, setCopiedTotal] = useState(false);
+  const [copiedCSV, setCopiedCSV] = useState(false);
+
+  // Helper to reset copy state after 1.5s
+  const showCopied = (setter: React.Dispatch<React.SetStateAction<boolean>>) => {
+    setter(true);
+    setTimeout(() => setter(false), 1500);
   };
 
   return (
@@ -43,56 +62,62 @@ export const MathProducerCalculator = () => {
           </p>
         </div>
 
-        {/* Main Calculator Card with Glassmorphism */}
+        {/* Main Calculator Card with Tabs */}
         <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg shadow-2xl overflow-hidden animate-scale-in">
-          <Accordion value={activeSection} onValueChange={setActiveSection} type="single" collapsible className="w-full">
-            
-            {/* Batch Range Input */}
-            <AccordionItem value="range" className="border-b border-white/10">
-              <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
-                <div className="flex items-center">
-                  <Hash className="w-5 h-5 mr-3" />
-                  Batch Episode Input
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="p-8 md:p-12">
-                <BatchRangeInput onDurationsUpdate={handleDurationsUpdate} />
-              </AccordionContent>
-            </AccordionItem>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="w-full h-auto bg-transparent border-b border-white/10 rounded-none p-0">
+              <TabsTrigger 
+                value="screenshot" 
+                className="flex-1 h-16 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted data-[state=active]:text-cinema-accent data-[state=active]:bg-transparent data-[state=active]:shadow-none relative data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-cinema-accent transition-all duration-300"
+              >
+                <Camera className="w-5 h-5 mr-3" />
+                Screenshot Uploading
+              </TabsTrigger>
+              <TabsTrigger 
+                value="range" 
+                className="flex-1 h-16 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted data-[state=active]:text-cinema-accent data-[state=active]:bg-transparent data-[state=active]:shadow-none relative data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-cinema-accent transition-all duration-300"
+              >
+                <Hash className="w-5 h-5 mr-3" />
+                Manual Episode Input
+              </TabsTrigger>
+              <TabsTrigger 
+                value="calculator" 
+                className="flex-1 h-16 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted data-[state=active]:text-cinema-accent data-[state=active]:bg-transparent data-[state=active]:shadow-none relative data-[state=active]:after:absolute data-[state=active]:after:bottom-0 data-[state=active]:after:left-0 data-[state=active]:after:right-0 data-[state=active]:after:h-0.5 data-[state=active]:after:bg-cinema-accent transition-all duration-300"
+              >
+                <Clock className="w-5 h-5 mr-3" />
+                Simple Time Calculator
+              </TabsTrigger>
+            </TabsList>
 
-            {/* Freeform List Input and Screenshot OCR temporarily hidden */}
-            <AccordionItem value="screenshot" className="border-b border-white/10">
-              <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
-                <div className="flex items-center">
-                  <Camera className="w-5 h-5 mr-3" />
-                  Screenshot Uploading
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="p-8 md:p-12">
+            <div className="p-8 md:p-12">
+              <TabsContent value="screenshot" className="mt-0 focus-visible:outline-none">
                 <ScreenshotInput onDurationsUpdate={handleDurationsUpdate} />
-              </AccordionContent>
-            </AccordionItem>
-
-            {/* Simple Time Calculator */}
-            <AccordionItem value="calculator" className="border-b-0">
-              <AccordionTrigger className="flex-1 h-16 px-8 bg-transparent border-0 font-heading font-semibold text-base uppercase tracking-wide text-cinema-text-muted hover:text-cinema-accent data-[state=open]:text-cinema-accent transition-all duration-300 hover:no-underline">
-                <div className="flex items-center">
-                  <Clock className="w-5 h-5 mr-3" />
-                  Simple Time Calculator
-                </div>
-              </AccordionTrigger>
-              <AccordionContent className="p-8 md:p-12">
+              </TabsContent>
+              <TabsContent value="range" className="mt-0 focus-visible:outline-none">
+                <BatchRangeInput onDurationsUpdate={handleDurationsUpdate} />
+              </TabsContent>
+              <TabsContent value="calculator" className="mt-0 focus-visible:outline-none">
                 <SimpleTimeCalculator />
-              </AccordionContent>
-            </AccordionItem>
-
-          </Accordion>
+              </TabsContent>
+            </div>
+          </Tabs>
 
           {/* Results Display */}
-          {durations.length > 0 && (
-            <div className="border-t border-white/10 bg-white/5 backdrop-blur-glass p-8 md:p-12 animate-fade-in">
-              <div className="text-center space-y-6">
-                <div className="space-y-2">
+          {totalStats.list.length > 0 && (
+            <div className="space-y-6">
+              {/* Total summary box */}
+              <div className="border-t border-white/10 bg-white/10 backdrop-blur-lg p-8 md:p-12 animate-fade-in rounded-xl shadow-lg relative">
+                <button
+                  className="absolute top-6 right-8 px-3 py-1 bg-cinema-accent text-cinema-bg rounded font-heading text-xs uppercase tracking-wide hover:bg-cinema-accent/90 transition-colors duration-200 z-10"
+                  onClick={() => {
+                    navigator.clipboard.writeText(formatTotalTimeWithDecimal(totalStats.totalMinutes));
+                    showCopied(setCopiedTotal);
+                  }}
+                  disabled={copiedTotal}
+                >
+                  {copiedTotal ? 'Copied!' : 'Copy Total'}
+                </button>
+                <div className="text-center space-y-2">
                   <p className="font-heading font-bold text-2xl text-cinema-accent uppercase tracking-wider">
                     {totalStats.totalEpisodes} Episode{totalStats.totalEpisodes !== 1 ? 's' : ''}
                   </p>
@@ -100,19 +125,68 @@ export const MathProducerCalculator = () => {
                     {formatTotalTimeWithDecimal(totalStats.totalMinutes)}
                   </p>
                 </div>
-                
-                {/* Episode breakdown preview */}
-                <div className="max-h-32 overflow-y-auto space-y-1 opacity-75">
-                  {durations.slice(0, 5).map((duration, index) => (
-                    <div key={index} className="text-sm text-cinema-text-muted font-body">
-                      {duration.episode}: {formatTotalTime(duration.minutes)}
+              </div>
+              {/* Episode breakdown box */}
+              <div className="border-t border-white/10 bg-white/10 backdrop-blur-lg p-8 md:p-12 animate-fade-in rounded-xl shadow-lg">
+                <div className="font-heading font-semibold text-base text-cinema-text-muted mb-2">Episode Breakdown (CSV)</div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm font-body text-cinema-text-muted border-collapse">
+                    <div className="flex items-center justify-end mb-2">
+                      <button
+                        className="px-3 py-1 bg-cinema-accent text-cinema-bg rounded font-heading text-xs uppercase tracking-wide hover:bg-cinema-accent/90 transition-colors duration-200"
+                        onClick={() => {
+                          const csv = totalStats.list.map((duration) => {
+                            let epNum = duration.episode;
+                            if (!/^Episode\s*/i.test(epNum)) {
+                              epNum = `Episode ${epNum}`;
+                            }
+                            const min = Math.floor(duration.minutes);
+                            const sec = Math.round((duration.minutes - min) * 60);
+                            const decimal = duration.minutes.toFixed(2);
+                            return `${epNum}\t${min}\t${sec}\t${decimal}`;
+                          }).join('\n');
+                          navigator.clipboard.writeText(csv);
+                          showCopied(setCopiedCSV);
+                        }}
+                        disabled={copiedCSV}
+                      >
+                        {copiedCSV ? 'Copied!' : 'Copy Ep/Min/Sec/Decimal'}
+                      </button>
                     </div>
-                  ))}
-                  {durations.length > 5 && (
-                    <div className="text-sm text-cinema-text-muted font-body">
-                      ... and {durations.length - 5} more episodes
-                    </div>
-                  )}
+                    <table className="w-full text-left text-sm font-body text-cinema-text-muted border-collapse">
+                      <thead>
+                        <tr className="bg-white/5">
+                          <th className="px-3 py-2 font-heading font-bold">Order</th>
+                          <th className="px-3 py-2 font-heading font-bold">Episode</th>
+                          <th className="px-3 py-2 font-heading font-bold">Minutes</th>
+                          <th className="px-3 py-2 font-heading font-bold">Seconds</th>
+                          <th className="px-3 py-2 font-heading font-bold">Decimal</th>
+                          <th className="px-3 py-2 font-heading font-bold">Min & Sec</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {totalStats.list.map((duration, index) => {
+                          let epNum = duration.episode;
+                          if (!/^Episode\s*/i.test(epNum)) {
+                            epNum = `Episode ${epNum}`;
+                          }
+                          const decimal = duration.minutes.toFixed(2);
+                          const min = Math.floor(duration.minutes);
+                          const sec = Math.round((duration.minutes - min) * 60);
+                          return (
+                            <tr key={index} className="border-b border-white/10">
+                              <td className="px-3 py-2">{index + 1}</td>
+                              <td className="px-3 py-2">{epNum}</td>
+                              <td className="px-3 py-2">{min}</td>
+                              <td className="px-3 py-2">{sec}</td>
+                              <td className="px-3 py-2">{decimal}</td>
+                              <td className="px-3 py-2">{min}m {sec}s</td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </table>
                 </div>
               </div>
             </div>
