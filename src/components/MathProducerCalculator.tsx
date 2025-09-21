@@ -15,6 +15,19 @@ interface Duration {
 }
 
 export const MathProducerCalculator = () => {
+  const [episodeRange, setEpisodeRange] = useState<string>('');
+  // Helper to parse episode range string (e.g., "21-30")
+  function getEpisodeRangeNumbers(range: string, count: number): string[] {
+    const match = range.match(/^(\d+)-(\d+)$/);
+    if (match) {
+      const start = parseInt(match[1], 10);
+      const end = parseInt(match[2], 10);
+      if (end >= start) {
+        return Array.from({ length: count }, (_, i) => String(start + i <= end ? start + i : end));
+      }
+    }
+    return [];
+  }
   const [editingEpisodes, setEditingEpisodes] = useState<string[] | null>(null);
   // Function to update episode number for a specific entry
   const handleEditEpisodeNumber = (index: number, newEpisode: string) => {
@@ -160,6 +173,27 @@ export const MathProducerCalculator = () => {
               {/* Episode breakdown box */}
               <div className="border-t border-white/10 bg-white/10 backdrop-blur-lg p-8 md:p-12 animate-fade-in rounded-xl shadow-lg">
                 <div className="font-heading font-semibold text-base text-cinema-text-muted mb-2">Episode Breakdown (CSV)</div>
+                <div className="mb-4 flex items-center gap-2">
+                  <label className="font-heading text-cinema-text-muted text-sm">Episode Range:</label>
+                  <input
+                    type="text"
+                    value={episodeRange}
+                    onChange={e => setEpisodeRange(e.target.value)}
+                    placeholder="e.g. 21-30"
+                    className="bg-cinema-bg border border-cinema-accent rounded px-2 py-1 w-24 text-cinema-text focus:outline-none"
+                  />
+                  <button
+                    className="px-3 py-1 bg-cinema-accent text-cinema-bg rounded font-heading text-xs uppercase tracking-wide hover:bg-cinema-accent/90"
+                    onClick={() => {
+                      if (!episodeRange) return;
+                      const numbers = getEpisodeRangeNumbers(episodeRange, totalStats.list.length);
+                      if (numbers.length === totalStats.list.length) {
+                        handleBulkSaveEpisodes(numbers);
+                        setEditingEpisodes(null);
+                      }
+                    }}
+                  >Apply Range</button>
+                </div>
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm font-body text-cinema-text-muted border-collapse">
                     <div className="flex items-center justify-end mb-2">
