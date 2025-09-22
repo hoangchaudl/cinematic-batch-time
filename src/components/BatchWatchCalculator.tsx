@@ -38,7 +38,7 @@ export const BatchWatchCalculator = () => {
             </h1>
           </div>
           <p className="font-heading font-medium text-xl text-cinema-text-muted tracking-wide uppercase">
-            Calculate Total Episode Time
+            Calculate Total Watch Time
           </p>
         </div>
 
@@ -101,11 +101,15 @@ export const BatchWatchCalculator = () => {
                 
                 {/* Episode breakdown preview */}
                 <div className="max-h-32 overflow-y-auto space-y-1 opacity-75">
-                  {durations.slice(0, 5).map((duration, index) => (
-                    <div key={index} className="text-sm text-cinema-text-muted font-body">
-                      {duration.episode}: {Math.floor(duration.minutes / 60)}h {duration.minutes % 60}m
-                    </div>
-                  ))}
+                  {durations.slice(0, 5).map((duration, index) => {
+                    const min = Math.floor(duration.minutes);
+                    const sec = Math.round((duration.minutes - min) * 60);
+                    return (
+                      <div key={index} className="text-sm text-cinema-text-muted font-body">
+                        {duration.episode}: {min}m {sec}s
+                      </div>
+                    );
+                  })}
                   {durations.length > 5 && (
                     <div className="text-sm text-cinema-text-muted font-body">
                       ... and {durations.length - 5} more episodes
