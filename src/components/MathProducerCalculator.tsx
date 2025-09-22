@@ -15,6 +15,8 @@ interface Duration {
 }
 
 export const MathProducerCalculator = () => {
+  // Bulk editing state for minutes and seconds
+  const [editingTimes, setEditingTimes] = useState<{min: string; sec: string}[] | null>(null);
   const [episodeRange, setEpisodeRange] = useState<string>('');
   // Helper to parse episode range string (e.g., "21-30")
   function getEpisodeRangeNumbers(range: string, count: number): string[] {
@@ -47,16 +49,24 @@ export const MathProducerCalculator = () => {
     }
   };
 
-  const handleBulkSaveEpisodes = (episodes: string[]) => {
+  const handleBulkSaveEpisodes = (episodes: string[], times?: {min: string; sec: string}[]) => {
+    function updateDurations(list: Duration[]): Duration[] {
+      return list.map((d, i) => {
+        let minutes = d.minutes;
+        if (times && times[i]) {
+          const min = parseInt(times[i].min, 10) || 0;
+          const sec = parseInt(times[i].sec, 10) || 0;
+          minutes = min + sec / 60;
+        }
+        return { ...d, episode: episodes[i], minutes };
+      });
+    }
     if (activeTab === 'range') {
-      const updated = rangeDurations.map((d, i) => ({ ...d, episode: episodes[i] }));
-      setRangeDurations(updated);
+      setRangeDurations(updateDurations(rangeDurations));
     } else if (activeTab === 'screenshot') {
-      const updated = screenshotDurations.map((d, i) => ({ ...d, episode: episodes[i] }));
-      setScreenshotDurations(updated);
+      setScreenshotDurations(updateDurations(screenshotDurations));
     } else if (activeTab === 'calculator') {
-      const updated = calculatorDurations.map((d, i) => ({ ...d, episode: episodes[i] }));
-      setCalculatorDurations(updated);
+      setCalculatorDurations(updateDurations(calculatorDurations));
     }
   };
   const [durations, setDurations] = useState<Duration[]>([]);
@@ -263,11 +273,21 @@ export const MathProducerCalculator = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {(editingEpisodes ? editingEpisodes : totalStats.list.map(d => d.episode)).map((ep, index) => {
-                          const duration = totalStats.list[index];
-                          const decimal = duration.minutes.toFixed(2);
-                          const min = Math.floor(duration.minutes);
-                          const sec = Math.round((duration.minutes - min) * 60);
+                        {(editingEpisodes && editingTimes
+                          ? totalStats.list.map((d, index) => ({
+                              episode: editingEpisodes[index],
+                              min: editingTimes[index].min,
+                              sec: editingTimes[index].sec,
+                              minutes: parseInt(editingTimes[index].min, 10) + (parseInt(editingTimes[index].sec, 10) || 0) / 60
+                            }))
+                          : totalStats.list.map((d) => ({
+                              episode: d.episode,
+                              min: Math.floor(d.minutes).toString(),
+                              sec: Math.round((d.minutes - Math.floor(d.minutes)) * 60).toString(),
+                              minutes: d.minutes
+                            }))
+                        ).map((row, index) => {
+                          const decimal = row.minutes.toFixed(2);
                           return (
                             <tr key={index} className="border-b border-white/10">
                               <td className="px-3 py-2">{index + 1}</td>
@@ -275,7 +295,7 @@ export const MathProducerCalculator = () => {
                                 {editingEpisodes ? (
                                   <input
                                     type="text"
-                                    value={ep}
+                                    value={row.episode}
                                     className="bg-transparent border-b border-cinema-accent px-1 w-20 text-cinema-text focus:outline-none"
                                     onChange={e => {
                                       const newEpisodes = [...editingEpisodes];
@@ -285,38 +305,83 @@ export const MathProducerCalculator = () => {
                                     style={{ fontWeight: 'bold' }}
                                   />
                                 ) : (
-                                  <span style={{ fontWeight: 'bold' }}>{ep}</span>
+                                  <span style={{ fontWeight: 'bold' }}>{row.episode}</span>
                                 )}
                               </td>
-                              <td className="px-3 py-2">{min}</td>
-                              <td className="px-3 py-2">{sec}</td>
+                              <td className="px-3 py-2">
+                                {editingTimes ? (
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    value={row.min}
+                                    className="bg-transparent border-b border-cinema-accent px-1 w-12 text-cinema-text focus:outline-none"
+                                    onChange={e => {
+                                      const newTimes = [...editingTimes];
+                                      newTimes[index].min = e.target.value;
+                                      setEditingTimes(newTimes);
+                                    }}
+                                    style={{ fontWeight: 'bold' }}
+                                  />
+                                ) : (
+                                  row.min
+                                )}
+                              </td>
+                              <td className="px-3 py-2">
+                                {editingTimes ? (
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    max={59}
+                                    value={row.sec}
+                                    className="bg-transparent border-b border-cinema-accent px-1 w-12 text-cinema-text focus:outline-none"
+                                    onChange={e => {
+                                      const newTimes = [...editingTimes];
+                                      newTimes[index].sec = e.target.value;
+                                      setEditingTimes(newTimes);
+                                    }}
+                                    style={{ fontWeight: 'bold' }}
+                                  />
+                                ) : (
+                                  row.sec
+                                )}
+                              </td>
                               <td className="px-3 py-2">{decimal}</td>
-                              <td className="px-3 py-2">{min}m {sec}s</td>
+                              <td className="px-3 py-2">{row.min}m {row.sec}s</td>
                             </tr>
                           );
                         })}
                         {totalStats.list.length > 0 && (
                           <tr>
                             <td colSpan={6} className="pt-4">
-                              {editingEpisodes ? (
+                              {editingEpisodes && editingTimes ? (
                                 <>
                                   <button
                                     className="px-4 py-2 bg-cinema-accent text-cinema-bg rounded font-heading text-xs uppercase tracking-wide hover:bg-cinema-accent/90 mr-2"
                                     onClick={() => {
-                                      handleBulkSaveEpisodes(editingEpisodes);
+                                      handleBulkSaveEpisodes(editingEpisodes, editingTimes);
                                       setEditingEpisodes(null);
+                                      setEditingTimes(null);
                                     }}
                                   >Save All</button>
                                   <button
                                     className="px-4 py-2 bg-gray-600 text-white rounded font-heading text-xs uppercase tracking-wide hover:bg-gray-700"
-                                    onClick={() => setEditingEpisodes(null)}
+                                    onClick={() => {
+                                      setEditingEpisodes(null);
+                                      setEditingTimes(null);
+                                    }}
                                   >Cancel</button>
                                 </>
                               ) : (
                                 <button
                                   className="px-4 py-2 bg-cinema-accent text-cinema-bg rounded font-heading text-xs uppercase tracking-wide hover:bg-cinema-accent/90"
-                                  onClick={() => setEditingEpisodes(totalStats.list.map(d => d.episode))}
-                                >Edit All Episodes</button>
+                                  onClick={() => {
+                                    setEditingEpisodes(totalStats.list.map(d => d.episode));
+                                    setEditingTimes(totalStats.list.map(d => ({
+                                      min: Math.floor(d.minutes).toString(),
+                                      sec: Math.round((d.minutes - Math.floor(d.minutes)) * 60).toString()
+                                    })));
+                                  }}
+                                >Edit All Episodes/Times</button>
                               )}
                             </td>
                           </tr>
