@@ -1,4 +1,5 @@
 import React, { useState, useCallback } from 'react';
+import { Toggle } from '@/components/ui/toggle';
 import { Button } from '@/components/ui/button';
 import { parseVideoList } from '@/lib/timeUtils';
 import { Camera, Upload, Loader2, FileImage } from 'lucide-react';
@@ -14,10 +15,13 @@ interface ScreenshotInputProps {
 }
 
 export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpdate }) => {
+  const [showExtractedText, setShowExtractedText] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [extractedText, setExtractedText] = useState('');
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [dragActive, setDragActive] = useState(false);
+  const [durations, setDurations] = useState<Duration[]>([]);
+  const [kpiMinutes, setKpiMinutes] = useState<number>(0);
 
   const processImage = async (file: File) => {
     setIsProcessing(true);
@@ -25,7 +29,6 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
 
     try {
       const worker = await createWorker('eng');
-      
       // Create image URL for preview
       const imageUrl = URL.createObjectURL(file);
       setUploadedImage(imageUrl);
@@ -34,11 +37,12 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
       await worker.terminate();
 
       setExtractedText(text);
-      
+
       // Auto-calculate if text contains recognizable patterns
-      const durations = parseVideoList(text);
-      if (durations.length > 0) {
-        onDurationsUpdate(durations);
+      const parsedDurations = parseVideoList(text);
+      if (parsedDurations.length > 0) {
+        setDurations(parsedDurations);
+        onDurationsUpdate(parsedDurations);
       }
     } catch (error) {
       console.error('OCR processing failed:', error);
@@ -83,13 +87,20 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
 
   const handleRecalculate = () => {
     if (extractedText) {
-      const durations = parseVideoList(extractedText);
-      onDurationsUpdate(durations);
+      const parsedDurations = parseVideoList(extractedText);
+      setDurations(parsedDurations);
+      onDurationsUpdate(parsedDurations);
     }
   };
 
+  // Calculate total duration in minutes
+  const totalDuration = durations.reduce((sum, d) => sum + d.minutes, 0);
+
+  // Calculate progress percentage
+  const progressPercent = kpiMinutes > 0 ? Math.min((totalDuration / kpiMinutes) * 100, 100) : 0;
+
   return (
-    <div className="space-y-8 animate-fade-in">
+  <div className="space-y-8 animate-fade-in">
       <div className="text-center space-y-4">
         <Camera className="w-8 h-8 text-cinema-accent mx-auto" />
         <h3 className="font-heading font-bold text-2xl text-cinema-text uppercase tracking-wider">
@@ -163,26 +174,71 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
         )}
       </div>
 
-      {/* Extracted Text Display */}
+      {/* Toggle for Extracted Text Display & KPI Progress */}
       {extractedText && (
         <div className="space-y-4 animate-fade-in">
-          <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6">
-            <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide mb-4">
-              Extracted Text
-            </h4>
-            <pre
-              className="whitespace-pre-wrap font-body text-sm text-cinema-text-muted max-h-48 overflow-y-auto"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleRecalculate();
-                }
-              }}
+          <div className="flex items-center space-x-2 mb-2">
+            <Toggle
+              pressed={showExtractedText}
+              onPressedChange={setShowExtractedText}
+              variant="outline"
+              size="sm"
+              aria-label="Toggle extracted text"
             >
-              {extractedText}
-            </pre>
+              {showExtractedText ? 'Hide Extracted Text' : 'Show Extracted Text'}
+            </Toggle>
           </div>
-          
+          {showExtractedText && (
+            <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6">
+              <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide mb-4">
+                Extracted Text
+              </h4>
+              <pre
+                className="whitespace-pre-wrap font-body text-sm text-cinema-text-muted max-h-48 overflow-y-auto"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleRecalculate();
+                  }
+                }}
+              >
+                {extractedText}
+              </pre>
+            </div>
+          )}
+
+          {/* Always show KPI Input and Progress */}
+          <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6 space-y-4">
+            <div className="flex flex-col md:flex-row md:items-center md:space-x-4 space-y-2 md:space-y-0 mb-4">
+              <label htmlFor="kpi-minutes" className="font-heading font-semibold text-cinema-accent uppercase tracking-wide">KPI Target (minutes):</label>
+              <input
+                id="kpi-minutes"
+                type="number"
+                min={1}
+                value={kpiMinutes === 0 ? '' : kpiMinutes}
+                onChange={e => {
+                  // Remove leading zeros
+                  const val = e.target.value.replace(/^0+/, '');
+                  setKpiMinutes(val === '' ? 0 : Number(val));
+                }}
+                className="border rounded px-3 py-2 w-32 font-body text-cinema-text bg-cinema-bg border-cinema-border focus:outline-none focus:ring-2 focus:ring-cinema-accent"
+                placeholder="Enter KPI"
+              />
+            </div>
+            <div className="font-body text-cinema-text-muted">Total Duration: <span className="font-bold text-cinema-accent">{totalDuration.toFixed(2)}</span> min</div>
+            {kpiMinutes > 0 && (
+              <div className="space-y-2">
+                <div className="w-full bg-cinema-border rounded-full h-6 overflow-hidden">
+                  <div
+                    className="bg-cinema-accent h-6 transition-all duration-500"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+                <div className="text-right font-heading font-bold text-cinema-accent">{progressPercent.toFixed(1)}%</div>
+              </div>
+            )}
+          </div>
+
           <div className="text-center">
             <Button
               onClick={handleRecalculate}
@@ -193,11 +249,11 @@ export const ScreenshotInput: React.FC<ScreenshotInputProps> = ({ onDurationsUpd
           </div>
         </div>
       )}
-
+    
       {/* Tips */}
       <div className="bg-white/5 backdrop-blur-glass border border-white/10 rounded-lg p-6 space-y-4">
         <h4 className="font-heading font-semibold text-sm text-cinema-accent uppercase tracking-wide">
-          OCR Tips
+          Screenshot Tips
         </h4>
         <div className="space-y-2 text-sm font-body text-cinema-text-muted">
           <div>• Capture screenshot of batch episodes in FrameIO using list view</div>
